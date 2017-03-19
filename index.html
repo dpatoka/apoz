@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>APOZ Projekt</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <div id="menu">
+            <span>Plik</span>
+            <ul>
+                <li id="menu-open-primary-file">Otwórz plik (1)</li>
+                <li id="menu-open-secondary-file">Otwórz plik (2)</li>
+                <li id="menu-duplicate">Duplikuj</li>
+                <li id="menu-reset">Resetuj</li>
+            </ul>
+            <span>Operacje jednopunktowe</span>
+            <ul>
+                <li id="menu-negate">Odwrotność (negacja)</li>
+                <li id="menu-threshold">Progowanie</li>
+                <li id="menu-posterize">Redukcja poziomów szarości</li>
+                <li id="menu-stretch">Rozciąganie</li>
+                <li>
+                    Arytmetyczne
+                    <ul>
+                        <li id="menu-arithmetic-add">Suma</li>
+                        <li id="menu-arithmetic-subtract">Różnica</li>
+                        <li id="menu-arithmetic-multiply">Iloczyn</li>
+                    </ul>
+                </li>
+                <li>
+                    Logiczne
+                    <ul>
+                        <li id="menu-logic-and">AND</li>
+                        <li id="menu-logic-or">OR</li>
+                        <li id="menu-logic-xor">XOR</li>
+                    </ul>
+                </li>
+                <li id="menu-uop">UOP</li>
+            </ul>
+            <span>Operacje sąsiedztwa</span>
+            <ul>
+                <li id="menu-filter-linear">Filtracja liniowa</li>
+                <li>
+                    Filtry statystyczne
+                    <ul>
+                        <li id="menu-filter-minimum">Minimalny</li>
+                        <li id="menu-filter-maximum">Maksymalny</li>
+                        <li id="menu-filter-median">Medianowy</li>
+                    </ul>
+                </li>
+                <li id="menu-morphological">Morfologiczne</li>
+            </ul>
+            <span>Inne</span>
+            <ul>
+                <li>
+                    Wyrównywanie histogramu
+                    <ul>
+                        <li id="menu-histogram-eq-avg">Reguła średnich</li>
+                        <li id="menu-histogram-eq-rand">Reguła losowa</li>
+                        <li id="menu-histogram-eq-neigh">Reguła sąsiedztwa</li>
+                        <li id="menu-histogram-eq-custom">Reguła wlasna</li>
+                    </ul>
+                </li>
+                <li id="menu-skeletonize">Szkieletyzacja</li>
+                <li id="menu-turtle">Algorytm żółwia</li>
+            </ul>  
+            <span>Projekt</span>
+            <ul>
+                <li id="menu-tint">Koloryzowanie</li>
+            </ul>
+        </div>
+
+        <div id="content">
+            <input id="primary-input" type="file" accept="image/*" style="display: none;" />
+            <input id="secondary-input" type="file" accept="image/*" style="display: none;" />
+
+            <div id="primary-picture-box" class="picture-box">
+                <p>Oryginał</p>
+                <canvas class="picture"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+            </div>
+            <div id="secondary-picture-box" class="picture-box">
+                <p>Oryginał 2</p>
+                <canvas class="picture"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+            </div>
+            <div id="output-picture-box" class="picture-box">
+                <p>Modyfikacje</p>
+                <canvas class="picture"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+                <canvas class="histogram" width="256"></canvas>
+            </div>
+
+            <hr/> 
+
+            <div id="threshold-tool" class="tool">
+                <span>Poziom progu:</span>
+                <input id="threshold-tool-value" type="text" maxlength="3" value="128">
+                <input id="threshold-tool-range" type="range" min="0" max="255">
+            </div>
+
+            <div id="posterize-tool" class="tool">
+                <span>Poziomy:</span>
+                <input id="posterize-tool-value" type="text" maxlength="3" value="256">
+                <input id="posterize-tool-range" type="range" min="2" max="256" value="256">
+            </div>
+
+            <div id="stretch-tool" class="tool">
+                <span>Początek:</span>
+                <input id="stretch-tool-value-min" type="text" maxlength="3" value="0">
+                <input id="stretch-tool-range-min" type="range" min="2" max="255" value="0">
+
+                <span>Koniec:</span>
+                <input id="stretch-tool-value-max" type="text" maxlength="3" value="255">
+                <input id="stretch-tool-range-max" type="range" min="2" max="255" value="255">
+            </div>
+
+            <div class="brightness-tool-content tool">
+                <span>Jasność:</span>
+                <input class="brightness-tool-regulation-value" type="text" maxlength="4" value="0">
+                <input class="brightness-tool-regulation-range" type="range" min="-100" max="200" value="0">
+            </div>
+
+            <div class="contrast-tool-content tool">
+                <span>Kontrast:</span>
+                <input class="contrast-tool-regulation-value" type="text" maxlength="3" value="0">
+                <input class="contrast-tool-regulation-range" type="range" min="-50" max="100" value="0">
+            </div>
+
+            <div class="gamma-tool-content tool">
+                <span>Korekcja Gamma:</span>
+                <input class="gamma-tool-regulation-value" type="text" maxlength="2" value="1">
+                <input class="gamma-tool-regulation-range" type="range" min="1" max="50" value="1">
+            </div>
+
+            <div id="filter-tool" class="tool">
+                <div id="filter-tool-preset">
+                    <select size="15">
+                        <option value="custom" selected>Maska własna</option>
+                        <optgroup label="Maski wygładzania">
+                            <option value="smooth_0">Silna</option>
+                            <option value="smooth_1">Średnia</option>
+                            <option value="smooth_2">Słaba</option>
+                            <option value="smooth_3">Bardzo słaba</option>
+                        </optgroup>
+                        <optgroup label="Maski wyostrzania">
+                            <option value="sharpen_0">Silna</option>
+                            <option value="sharpen_1">Średnia</option>
+                            <option value="sharpen_2">Słaba</option>
+                            <option value="sharpen_3">Bardzo słaba</option>
+                        </optgroup>
+                        <optgroup label="Detekcja krawędzi">
+                            <option value="edge-detect_0">Pozioma</option>
+                            <option value="edge-detect_1">Pionowa</option>
+                            <option value="edge-detect_2">Ukośna</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div id="filter-tool-mask">
+                    <fieldset>
+                        <legend>Maska</legend>
+                        <table>
+                            <tr>
+                                <td><input type="text" size="2"></td>
+                                <td><input type="text" size="2"></td>
+                                <td><input type="text" size="2"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" size="2"></td>
+                                <td><input type="text" size="2"></td>
+                                <td><input type="text" size="2"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" size="2"></td>
+                                <td><input type="text" size="2"></td>
+                                <td><input type="text" size="2"></td>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </div>
+
+                <div id="filter-tool-scale">
+                    <fieldset>
+                        <legend>Metoda skalowania</legend>
+                        <label>
+                            <input type="radio" name="scale" value="proportion" checked>
+                            Proporcjonalna
+                        </label>
+                        <label>
+                            <input type="radio" name="scale" value="trivalent">
+                            Trójwartościowa
+                        </label>
+                        <label>
+                            <input type="radio" name="scale" value="trim">
+                            Obcinająca
+                        </label>
+                    </fieldset>
+                </div>
+
+                <div>
+                    <fieldset>
+                        <legend>Piksele brzegowe</legend>
+                        <label><input type="radio" name="edge" checked>Rozszerz</label>
+                        <label><input type="radio" name="edge">Pomiń</label>
+                        <label><input type="radio" name="edge">Istniejące</label>
+                    </fieldset>
+                </div>
+
+                <input id="filter-tool-apply" type="button" value="Zastosuj">
+            </div>
+            
+            <div class="tint-tool tool">
+                <div style="float:left; margin-right: 150px; width: 300px;">
+                    <div style="float:left; margin: 5px 0 5px 0;">
+                        <span style="font-weight: bold;">Narysuj funkcę zmiany koloru na wykresie:</span><br/>
+                        zacznij od lewej strony trzymając przyciśnięty klawisz myszy
+                    </div>
+                    <div style="float:left; clear:both; margin-top: 20px; width:170px; height: 180px;">
+                        <div style="position: relative;">
+                            <canvas id="graph_layer_0" width="170" height="180" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+                            <canvas id="graph_layer_1" width="170" height="180" style="position: absolute; left: 0; top: 0; z-index: 1;" ></canvas>
+                        </div>    
+                    </div>    
+                    <div style="float:left; clear:both; text-align:center; width: 200px; margin:10px 0 10px 0;">
+                        <button id="tint-button">Koloryzuj</button>
+                    </div>
+                </div>
+                <div>
+                    <div style="float:left; margin-right: 5px;">Wartości wskazanego punktu: </div>
+                    <div id="colorPicker" style="float:left;"></div>
+                </div>    
+                
+            </div>
+            <div id="morphological-tool" class="tool">
+                <p id="morphological-tool-operations">
+                    Operacja:
+                    <button value="erode">Erozja</button>
+                    <button value="dilate">Dylatacja</button>
+                    <button value="open">Otwarcie</button>
+                    <button value="close">Zamknięcie</button>
+                </p>
+                <p id="morphological-tool-shapes">
+                    Element strukturalny: 
+                    <label><input type="radio" name="shape" value="square" checked> Kwadrat</label>
+                    <label><input type="radio" name="shape" value="cross"> Romb</label>
+                </p>
+            </div>
+            <div id="uop-tool" class="tool">
+                <table>
+                    <tr></tr>
+                    <tr></tr>
+                </table>
+                <input id="uop-tool-apply" type="button" value="Zastosuj">
+                <input id="uop-tool-reset" type="button" value="Resetuj">
+            </div>
+        </div>
+
+        <script src="js/lib/lodash.js"></script>
+        <script src="js/lib/jquery-3.1.1.min.js"></script>
+
+        <script src="js/bootstrap.js"></script>
+        <script src="js/menu.js"></script>
+        <script src="js/file.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/picture.js"></script>
+        <script src="js/pixels.js"></script>
+        <script src="js/transforms/onepoint.js"></script>
+        <script src="js/transforms/filter.js"></script>
+        <script src="js/transforms/morphological.js"></script>
+        <script src="js/transforms/skeletonize.js"></script>
+        <script src="js/transforms/turtle.js"></script>
+        <script src="js/transforms/histogram.js"></script>
+        <script src="js/tools/misc.js"></script>
+        <script src="js/tools/filter.js"></script>
+        <script src="js/tools/morphological.js"></script>
+        <script src="js/tools/uop.js"></script>
+        <script src="js/tools/chartController.js"></script>
+        <script src="js/tools/colorPicker.js"></script>
+        <script src="js/transforms/tint.js"></script>
+    </body>
+</html>
