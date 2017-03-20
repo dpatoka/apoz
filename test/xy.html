@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Oś XY</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <!--<canvas id="graph" width="300" height="300"></canvas>-->
+        <canvas id="graph" width="170" height="180"></canvas>
+        <div id="color" style="width:200px;height:50px;float:left"></div>
+        <script>
+            var graph;
+            var xPadding = 30;
+            var yPadding = 30;
+            var scaleRatio = 1;
+
+            // Notice I changed The X values
+            var data = {values: []};
+            for (x = 0, y = 0; x <= 128; x++, y++) {
+                data['values'][x] = {X: x, Y: y};
+            }
+
+            // Returns the max Y value in our data list
+            function getMaxY() {
+                var max = 0;
+
+                for (var i = 0; i < data.values.length; i++) {
+                    if (data.values[i].Y > max) {
+                        max = data.values[i].Y;
+                    }
+                }
+
+//                max += 10 - max % 10;
+                return max;
+            }
+
+            // Returns the max X value in our data list
+            function getMaxX() {
+                var max = 0;
+
+                for (var i = 0; i < data.values.length; i++) {
+                    if (data.values[i].X > max) {
+                        max = data.values[i].X;
+                    }
+                }
+
+//                max += 10 - max % 10;
+                return max;
+            }
+
+            // Return the x pixel for a graph point
+            function getXPixel(val) {
+                // uses the getMaxX() function
+//                return ((graph.width - xPadding) / getMaxX()) * val + (xPadding * 1.5);
+                return val * scaleRatio + xPadding;
+            }
+
+            function getXPixelValue(val) {
+                // uses the getMaxX() function
+                return val / scaleRatio - xPadding;
+            }
+
+            // Return the y pixel for a graph point
+            function getYPixel(val) {
+//                return graph.height - (((graph.height - yPadding) / getMaxY()) * val) - yPadding;
+                return graph.height - val * scaleRatio - yPadding;
+            }
+
+            function getYPixelValue(val) {
+                return graph.height - val / scaleRatio - yPadding + 3;
+            }
+
+            graph = document.getElementById("graph");
+            var ctx = graph.getContext('2d');
+
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#333';
+            ctx.font = 'italic 7pt sans-serif';
+            ctx.textAlign = "center";
+
+            // Draw the axises
+            ctx.beginPath();
+            ctx.moveTo(xPadding, 0);
+            ctx.lineTo(xPadding, graph.height - yPadding);// os y
+            ctx.lineTo(graph.width, graph.height - yPadding); //os x
+            ctx.stroke();
+
+
+            // Draw the X value texts
+            for (var i = 0; i < data.values.length; i += 10) {
+                // uses data.values[i].X
+                ctx.fillText(data.values[i].X, getXPixel(data.values[i].X), graph.height - yPadding + 20);
+            }
+
+            // Draw the Y value texts
+            ctx.textAlign = "right"
+            ctx.textBaseline = "middle";
+
+            for (var i = 0; i < getMaxY(); i += 10) {
+                ctx.fillText(i, xPadding - 10, getYPixel(i));
+            }
+
+            ctx.strokeStyle = '#f00';
+
+            // Draw the line graph
+            ctx.beginPath();
+            ctx.moveTo(getXPixel(data.values[0].X), getYPixel(data.values[0].Y));
+            for (var i = 1; i < data.values.length; i++) {
+                ctx.fillRect(getXPixel(data.values[i].X), getYPixel(data.values[i].Y), 2, 2);
+//                ctx.lineTo(getXPixel(data.values[i].X), getYPixel(data.values[i].Y));
+//                ctx.lineTo(data.values[i].X, data.values[i].Y);
+            }
+            ctx.stroke();
+
+            // Draw the dots
+//            ctx.fillStyle = '#333';
+//
+//            for (var i = 0; i < data.values.length; i++) {
+//                ctx.beginPath();
+//                ctx.arc(getXPixel(data.values[i].X), getYPixel(data.values[i].Y), 1, 0, Math.PI * 2, true);
+//                ctx.fill();
+//            }
+
+            var color = document.getElementById('color');
+            function pick(event) {
+                var x = event.layerX;
+                var y = event.layerY;
+//                console.log('x: '+(x/scaleRatio - xPadding) +  ' y: ' + (y/scaleRatio - yPadding));
+                var pixel = ctx.getImageData(x, y, 1, 1);
+                var data = pixel.data;
+                var rgba = 'rgba(' + data[0] + ',' + data[1] +
+                        ',' + data[2] + ',' + (data[3] / 255) + ')';
+                color.style.background = rgba;
+                color.textContent = rgba;
+            }
+
+            function mousedown(event) {
+                var x = event.layerX / scaleRatio - xPadding;
+                var y = event.layerY / scaleRatio - yPadding;
+                var yVal = getYPixelValue(event.layerY);
+                console.log('### mousedown ###')
+                console.log('click x: ' + x + ' y: ' + y + ' yVal: ' + yVal);
+                console.log(data['values'][x].Y + ' ' + yVal)
+
+                graph.addEventListener('mousemove', draw);
+            }
+
+            function draw(event) {
+                var x = event.layerX / scaleRatio - xPadding;
+//                var x = event.layerX / scaleRatio;
+                var y = event.layerY / scaleRatio - yPadding;
+                if(x <= 0 || x > 128 || y <= 0 || y > 107){
+                    graph.removeEventListener('mousemove', draw);
+                    return false;
+                }
+
+                ctx.beginPath();
+                ctx.clearRect(getXPixel(data['values'][x].X), 11, 4, getMaxY());
+                ctx.fillRect(x + xPadding, y + yPadding, 2, 2);
+                data['values'][x].Y = getYPixelValue(event.layerY);
+            }
+            graph.addEventListener('mousedown', mousedown);
+            graph.addEventListener('mouseup', function () {
+                console.log('### UP2 ###')
+                graph.removeEventListener('mousemove', draw);
+            });
+        </script>
+    </body>
+</html>
